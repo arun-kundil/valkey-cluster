@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: valkey
+spec:
+  serviceName: valkey
+  replicas: 6
+  selector:
+    matchLabels:
+      app: valkey
+  template:
+    metadata:
+      labels:
+        app: valkey
+    spec:
+      containers:
+        - name: valkey
+          image: valkey/valkey:latest
+          ports:
+            - containerPort: 6379
+          command:
+            - "valkey-server"
+            - "--cluster-enabled"
+            - "yes"
+            - "--cluster-config-file"
+            - "nodes.conf"
+            - "--cluster-node-timeout"
+            - "5000"
+            - "--appendonly"
+            - "yes"
+          volumeMounts:
+            - name: data
+              mountPath: /data
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi
